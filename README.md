@@ -33,7 +33,13 @@ For example, the following code will train a model for 50000 iterations and save
 python train.py --num_iters=50000 --save_file="test"
 ```
 
-The models are saved inside trained_models directory and the visualization files can be viewed by running tensorboard on the tensorboard directory.
+The models are saved inside trained_models directory and the visualization files can be viewed by running
+
+```
+tensorboard --logdir=tensorboard
+```
+
+on the root directory.
 
 You can modify the value fps in the file src/flappy_bird.py to change the speed of the simulation.
 
