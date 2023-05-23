@@ -6,10 +6,11 @@ from numpy.random import randint
 from pygame import Rect, init, time, display
 from pygame.event import pump
 from pygame.image import load
+import pygame
 from pygame.surfarray import array3d, pixels_alpha
 from pygame.transform import rotate
 import numpy as np
-
+from PIL import Image, ImageFilter
 
 class FlappyBird(object):
     init()
@@ -31,7 +32,9 @@ class FlappyBird(object):
     bird_hitmask = [pixels_alpha(image).astype(bool) for image in bird_images]
     pipe_hitmask = [pixels_alpha(image).astype(bool) for image in pipe_images]
 
-    fps = 30
+    #fps = 30
+    fps=30000
+    
     pipe_gap_size = 100
     pipe_velocity_x = -4
 
@@ -111,7 +114,8 @@ class FlappyBird(object):
             pipe_center_x = pipe["x_upper"] + self.pipe_width / 2
             if pipe_center_x < bird_center_x < pipe_center_x + 5:
                 self.score += 1
-                reward = 1
+                #reward = 1
+                reward = 0.1
                 break
 
         # Update index and iteration
@@ -140,7 +144,8 @@ class FlappyBird(object):
             del self.pipes[0]
         if self.is_collided():
             terminal = True
-            reward = -1
+            #reward = -1
+            reward = -1000
             self.__init__()
 
         # Draw everything
@@ -153,4 +158,4 @@ class FlappyBird(object):
         image = array3d(display.get_surface())
         display.update()
         self.fps_clock.tick(self.fps)
-        return image, reward, terminal
+        return image, reward, terminal, self.score

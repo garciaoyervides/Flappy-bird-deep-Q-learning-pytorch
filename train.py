@@ -26,11 +26,15 @@ def get_args():
     parser.add_argument("--gamma", type=float, default=0.99)
     parser.add_argument("--initial_epsilon", type=float, default=0.1)
     parser.add_argument("--final_epsilon", type=float, default=1e-4)
+    #epsilon is the exploration rate
+    #high epsilon means more exploration (using random actions)
+    #low epsilon means more exploitation (using learned actions)
     parser.add_argument("--num_iters", type=int, default=2000000)
     parser.add_argument("--replay_memory_size", type=int, default=50000,
                         help="Number of epoches between testing phases")
     parser.add_argument("--log_path", type=str, default="tensorboard")
     parser.add_argument("--saved_path", type=str, default="trained_models")
+    parser.add_argument("--save_file", type=str, default="test")
 
     args = parser.parse_args()
     return args
@@ -45,25 +49,24 @@ def train(opt):
     if os.path.isdir(opt.log_path):
         shutil.rmtree(opt.log_path)
     os.makedirs(opt.log_path)
-    writer = SummaryWriter(opt.log_path)
+    writer = SummaryWriter(log_dir=opt.log_path + "/" + opt.save_file)
     optimizer = torch.optim.Adam(model.parameters(), lr=opt.lr)
     criterion = nn.MSELoss()
     game_state = FlappyBird()
-    image, reward, terminal = game_state.next_frame(0)
+    image, reward, terminal, score = game_state.next_frame(0)
     image = pre_processing(image[:game_state.screen_width, :int(game_state.base_y)], opt.image_size, opt.image_size)
     image = torch.from_numpy(image)
     if torch.cuda.is_available():
         model.cuda()
         image = image.cuda()
     state = torch.cat(tuple(image for _ in range(4)))[None, :, :, :]
-
+    
     replay_memory = []
     iter = 0
     while iter < opt.num_iters:
         prediction = model(state)[0]
         # Exploration or exploitation
-        epsilon = opt.final_epsilon + (
-                (opt.num_iters - iter) * (opt.initial_epsilon - opt.final_epsilon) / opt.num_iters)
+        epsilon = opt.final_epsilon + ((opt.num_iters - iter) * (opt.initial_epsilon - opt.final_epsilon) / opt.num_iters)
         u = random()
         random_action = u <= epsilon
         if random_action:
@@ -71,9 +74,10 @@ def train(opt):
             action = randint(0, 1)
         else:
 
-            action = torch.argmax(prediction)[0]
+            #action = torch.argmax(prediction)[0]
+            action = torch.argmax(prediction).item()
 
-        next_image, reward, terminal = game_state.next_frame(action)
+        next_image, reward, terminal, score = game_state.next_frame(action)
         next_image = pre_processing(next_image[:game_state.screen_width, :int(game_state.base_y)], opt.image_size,
                                     opt.image_size)
         next_image = torch.from_numpy(next_image)
@@ -123,9 +127,10 @@ def train(opt):
         writer.add_scalar('Train/Epsilon', epsilon, iter)
         writer.add_scalar('Train/Reward', reward, iter)
         writer.add_scalar('Train/Q-value', torch.max(prediction), iter)
+        writer.add_scalar('Train/Score', score, iter)
         if (iter+1) % 1000000 == 0:
             torch.save(model, "{}/flappy_bird_{}".format(opt.saved_path, iter+1))
-    torch.save(model, "{}/flappy_bird".format(opt.saved_path))
+    torch.save(model, "{}/{}".format(opt.saved_path,opt.save_file))
 
 
 if __name__ == "__main__":

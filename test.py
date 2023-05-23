@@ -14,6 +14,7 @@ def get_args():
         """Implementation of Deep Q Network to play Flappy Bird""")
     parser.add_argument("--image_size", type=int, default=84, help="The common width and height for all images")
     parser.add_argument("--saved_path", type=str, default="trained_models")
+    parser.add_argument("--model_file", type=str, default="flappy_bird")
 
     args = parser.parse_args()
     return args
@@ -25,12 +26,12 @@ def test(opt):
     else:
         torch.manual_seed(123)
     if torch.cuda.is_available():
-        model = torch.load("{}/flappy_bird".format(opt.saved_path))
+        model = torch.load("{}/{}".format(opt.saved_path,opt.model_file))
     else:
-        model = torch.load("{}/flappy_bird".format(opt.saved_path), map_location=lambda storage, loc: storage)
+        model = torch.load("{}/{}".format(opt.saved_path,opt.model_file), map_location=lambda storage, loc: storage)
     model.eval()
     game_state = FlappyBird()
-    image, reward, terminal = game_state.next_frame(0)
+    image, reward, terminal, score = game_state.next_frame(0)
     image = pre_processing(image[:game_state.screen_width, :int(game_state.base_y)], opt.image_size, opt.image_size)
     image = torch.from_numpy(image)
     if torch.cuda.is_available():
@@ -40,7 +41,8 @@ def test(opt):
 
     while True:
         prediction = model(state)[0]
-        action = torch.argmax(prediction)[0]
+        #action = torch.argmax(prediction)[0]
+        action = torch.argmax(prediction).item()
 
         next_image, reward, terminal = game_state.next_frame(action)
         next_image = pre_processing(next_image[:game_state.screen_width, :int(game_state.base_y)], opt.image_size,
