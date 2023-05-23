@@ -1,27 +1,50 @@
-# [PYTORCH] Deep Q-learning for playing Flappy Bird
+# Deep Q-learning for playing Flappy Bird
+
+
 
 ## Introduction
 
-Here is my python source code for training an agent to play flappy bird. It could be seen as a very basic example of Reinforcement Learning's application.
-<p align="center">
-  <img src="demo/flappybird.gif" width=600><br/>
-  <i>Result</i>
-</p>
+This is an implementation of a Deep Q-learning algorithm in Python. The code is based on [this](https://github.com/uvipen/Flappy-bird-deep-Q-learning-pytorch).  
 
-## How to use my code
+## Setup
 
-With my code, you can:
-* **Train your model from scratch** by running **python train.py**
-* **Test your trained model** by running **python test.py**
+The requirements are:
 
-## Trained models
-
-You could find my trained model at **trained_models/flappy_bird**
- 
-## Requirements
-
-* **python 3.6**
+* **python 3.8**
+* **pytorch**
 * **pygame**
 * **cv2**
-* **pytorch** 
 * **numpy**
+* **tensorboard** (for visualization)
+
+It is recommended to use a virtual environment for running this code.
+
+## Training
+
+```
+python train.py
+```
+
+will start training the model using default parameters. Inside train.py you will find the different arguments that you can supply the program for changing the specifications of the training.
+
+For example, the following code will train a model for 50000 iterations and save the model file as test:
+
+```
+python train.py --num_iters=50000 --save_file="test"
+```
+
+The models are saved inside trained_models directory and the visualization files can be viewed by running tensorboard on the tensorboard directory.
+
+You can modify the value fps in the file src/flappy_bird.py to change the speed of the simulation.
+
+## Testing
+
+```
+python test.py –model_file “test”
+```
+
+will load the model named test inside the trained_model directory and run the simulation over and over.  It is recommended to run the testing simulation at 30 fps.
+
+## Links
+
+Video available at [YouTube](https://www.youtube.com/watch?v=YYr8VPLTh0o) 
